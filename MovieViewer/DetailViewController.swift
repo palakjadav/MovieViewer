@@ -9,16 +9,27 @@
 import UIKit
 
 class DetailViewController: UIViewController {
-
     
-    @IBOutlet weak var posterImageView: UIImageView!
-    
+    @IBOutlet weak var collectionPosterView: UIImageView!
     @IBOutlet weak var titleLabel: UILabel!
     @IBOutlet weak var overviewLabel: UILabel!
-    var movies : [NSDictionary]?
+    var movies : NSDictionary!
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        let title = movies["title"] as? String
+        titleLabel.text = title
+        
+        let overview = movies["overview"]
+        overviewLabel.text = overview as? String
+        print (movies)
+        let baseUrl = "https://image.tmdb.org/t/p/w500/"
+
+        if let posterPath = movies["poster_path"] as? String {
+            let imageRequest = NSURL(string: baseUrl + posterPath)
+            collectionPosterView.setImageWith(imageRequest as! URL)
+        }
 
         // Do any additional setup after loading the view.
     }
@@ -29,25 +40,15 @@ class DetailViewController: UIViewController {
     }
     
 
-    
+    /*
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        print("segue")
-        
-        let cell=sender as! UICollectionView
-        //let indexPath: NSIndexPath = self.collectionView.indexPathsForSelectedItems().first!
-        //let selectedRow: NSManagedObject = locationsList[indexPath] as! NSManagedObject
-        //let movie =  movies![indexPath!.row]
-        
-        let detailViewController = segue.destination
-        
-        
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
     }
-    
+    */
 
 }

@@ -139,31 +139,37 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         let cell=collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionMovieCell", for: indexPath) as! CollectionMovieCell
         let movie =  movies![indexPath.row]
         //let title = [movie["title"] as! String]
-        let posterPath = movie["poster_path"] as! String
-        let baseUrl = "https://image.tmdb.org/t/p/w500/"
+                let baseUrl = "https://image.tmdb.org/t/p/w500/"
+        
+        if let posterPath = movie["poster_path"] as? String {
+            let imageRequest = NSURLRequest(url: NSURL(string: baseUrl + posterPath)! as URL)
+            
+            cell.collectionPosterView.setImageWith(imageRequest as URLRequest, placeholderImage: nil, success: { (imageRequest, imageResponse, image) -> Void in
+                // imageResponse will be nil if the image is cached
+                if imageResponse != nil {
+                    print("Image was NOT cached, fade in image")
+                    cell.collectionPosterView.alpha = 0.0
+                    cell.collectionPosterView.image = image
+                    UIView.setAnimationsEnabled(true)
+                    UIView.animate(withDuration: 2, animations: { () -> Void in
+                        cell.collectionPosterView.alpha = 1.0
+                    })
+                } else {
+                    print("Image was cached so just update the image")
+                    cell.collectionPosterView.image = image
+                }
+            },
+            failure: { (imageRequest, imageResponse, error) -> Void in
+                                                    print("error")
+            })
+        }
+
         //let imageUrl = NSURL(string: baseUrl + posterPath)
-        let imageRequest = NSURLRequest(url: NSURL(string: baseUrl + posterPath)! as URL)
+        // new let imageRequest = NSURLRequest(url: NSURL(string: baseUrl + posterPath)! as URL)
         //cell.collectionPosterView.setImageWith(imageUrl as! URL)
         
       
-        cell.collectionPosterView.setImageWith(imageRequest as URLRequest, placeholderImage: nil, success: { (imageRequest, imageResponse, image) -> Void in
-            // imageResponse will be nil if the image is cached
-            if imageResponse != nil {
-                print("Image was NOT cached, fade in image")
-                cell.collectionPosterView.alpha = 0.0
-                cell.collectionPosterView.image = image
-                UIView.setAnimationsEnabled(true)
-                UIView.animate(withDuration: 2, animations: { () -> Void in
-                    cell.collectionPosterView.alpha = 1.0
-                })
-            } else {
-                print("Image was cached so just update the image")
-                cell.collectionPosterView.image = image
-            }
-        },
-            failure: { (imageRequest, imageResponse, error) -> Void in
-             print("error")
-        })
+        
         return cell
     }
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
@@ -222,13 +228,21 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
     }
-    /*
+
     // MARK: - Navigation
 
     // In a storyboard-based application, you will often want to do a little preparation before navigation
     override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         // Get the new view controller using segue.destinationViewController.
         // Pass the selected object to the new view controller.
+        print("segue")
+        
+        let cell = sender as! UICollectionViewCell
+        let indexPath = collectionView.indexPath(for: cell)
+        let movie = movies![indexPath!.row]
+        let detailViewController = segue.destination as! DetailViewController
+        detailViewController.movies = movie
+        
     }
-    */
+    
 }
