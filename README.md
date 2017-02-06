@@ -1,5 +1,5 @@
 # MovieViewer
-Code Path Week 1 Assignment
+Code Path Week 1 Assignment :
 FlicksApp is a movie viewing application for iOS.
 
 Submitted by: Palak Jadav
