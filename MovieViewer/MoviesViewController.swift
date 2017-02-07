@@ -9,139 +9,105 @@ import UIKit
 import AFNetworking
 import MBProgressHUD
 
-class MoviesViewController: UIViewController, UITableViewDataSource, UITableViewDelegate, UICollectionViewDataSource, UICollectionViewDelegate,
+class MoviesViewController: UIViewController, UICollectionViewDataSource, UICollectionViewDelegate,
     UISearchBarDelegate
 {
-    @IBOutlet weak var tableView: UITableView!
     @IBOutlet weak var collectionView: UICollectionView!
     @IBOutlet weak var collectionPosterView: UIImageView!
     @IBOutlet weak var searchBar: UISearchBar!
     @IBOutlet var myView: UIView!
     
     var movies : [NSDictionary]?
-    var filterMovies: [[String: Any]]?
-
+    var filteredData: [NSDictionary]?
+    var searchController: UISearchController!
+    var endpoint: String!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        //tableView.dataSource = self
-        //tableView.delegate = self
         collectionView.dataSource = self
         collectionView.delegate = self
         searchBar.delegate = self
-        searchBar.delegate = self
-        //filterMovies = movies?["title"] as! String
-        
+
         if Reachability.isInternetAvailable() == true {
             print("Internet connection OK")
         } else {
-            print("Internet connection FAILED")
-            let testFrame : CGRect = CGRect(x: 0, y: 67, width: 400, height: 44)
-            let testView : UIView = UIView(frame: testFrame)
-            testView.backgroundColor = UIColor(patternImage: UIImage(named: "noInternet4.png")!)
-            testView.alpha=1
-            self.view.addSubview(testView)
+            internetConnectionFailure()
         }
         // Initialize a UIRefreshControl
         let refreshControl = UIRefreshControl()
         refreshControl.addTarget(self, action: #selector(refreshControlAction(_:)), for: UIControlEvents.valueChanged)
         
-        //tableView.insertSubview(refreshControl, at: 0)
-        
         // add refresh control to collection view
         collectionView.insertSubview(refreshControl, at:0)
-
-        let apiKey = "77bc664c8b8d2989ffcfed882e4cb784"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
-        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
-        // Display HUD right before the request is made
-        MBProgressHUD.showAdded(to: self.view, animated: true)
-        
-        let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
-            if let data = data {
-                if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
-                    //print("response: \(dataDictionary)")
-                    
-                    self.movies = dataDictionary["results"]as? [NSDictionary]
-                    //self.tableView.reloadData()
-                    
-                    self.collectionView.reloadData()
-                }
-            }
-            
-        // Hide HUD once the network request comes back (must be done on main UI thread)
-        MBProgressHUD.hide(for: self.view, animated: true)
-        }
-        task.resume()
+        self.loadData()
     }
-    func addSubview(_ view: UIView) {
-       /* CGRect.self;  viewRect = CGRectMake(10, 10, 100, 100);
-        UIView*; myView = [[UIView, alloc] initWithFrame:viewRect];
-        self.view.backgroundColor = UIColor.red
-        var testView: UIView = UIView(frame: CGRectMake(0, 0, 320, 568))
-        testView.backgroundColor = UIColor.red
-        testView.alpha = 0.5
-        testView.tag = 100
-        super.view.isUserInteractionEnabled = false
-        self.view.isUserInteractionEnabled = true
-        self.view.addSubview(testView)*/
-     
+    func addSubview(_ view: UIView)
+    {
      let testFrame : CGRect = CGRect(x: 0, y: 67, width: 400, height: 44)
      let testView : UIView = UIView(frame: testFrame)
      testView.backgroundColor = UIColor(patternImage: UIImage(named: "noInternet4.png")!)
      testView.alpha=1
      self.view.addSubview(testView)
-
+    }
+    
+    func internetConnectionFailure() {
+        print("Internet connection FAILED")
+        let testFrame : CGRect = CGRect(x: 0, y: 67, width: 400, height: 44)
+        let testView : UIView = UIView(frame: testFrame)
+        testView.backgroundColor = UIColor(patternImage: UIImage(named: "noInternet4.png")!)
+        testView.alpha=1
+        self.view.addSubview(testView)
+    }
+    
+    func loadData() {
+        if Reachability.isInternetAvailable() == true
+        {
+            print("Internet connection OK Refresh")
+            let apiKey = "77bc664c8b8d2989ffcfed882e4cb784"
+            let url = URL(string: "https://api.themoviedb.org/3/movie/\(endpoint!)?api_key=\(apiKey)")!
+            let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
+            
+            // Configure session so that completion handler is executed on main UI thread
+            let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
+            MBProgressHUD.showAdded(to: self.view, animated: true)
+            let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
+                if let data = data {
+                    if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
+                        self.movies = dataDictionary["results"]as? [NSDictionary]
+                        self.filteredData = self.movies
+                        self.collectionView.reloadData()
+                    }
+                }
+                // Hide HUD once the network request comes back (must be done on main UI thread)
+                MBProgressHUD.hide(for: self.view, animated: true)
+            }
+            task.resume()
+        }
+        else
+        {
+            internetConnectionFailure()
+        }
     }
     
     func refreshControlAction(_ refreshControl: UIRefreshControl) {
-        if Reachability.isInternetAvailable() == true {
-            
-            print("Internet connection OK Refresh")
-            //testView.alpha=1
-        
-        let apiKey = "77bc664c8b8d2989ffcfed882e4cb784"
-        let url = URL(string: "https://api.themoviedb.org/3/movie/now_playing?api_key=\(apiKey)")!
-        let request = URLRequest(url: url, cachePolicy: .reloadIgnoringLocalCacheData, timeoutInterval: 10)
-        
-        // Configure session so that completion handler is executed on main UI thread
-        let session = URLSession(configuration: .default, delegate: nil, delegateQueue: OperationQueue.main)
-        let task: URLSessionDataTask = session.dataTask(with: request) { (data: Data?, response: URLResponse?, error: Error?) in
-            if let data = data {
-                if let dataDictionary = try! JSONSerialization.jsonObject(with: data, options: []) as? NSDictionary {
-                   // print("response: \(dataDictionary)")
-                    
-                    self.movies = dataDictionary["results"]as? [NSDictionary]
-                    //self.tableView.reloadData()
-                    self.collectionView.reloadData()
-                    refreshControl.endRefreshing()
-                }
-            }
-            // Hide HUD once the network request comes back (must be done on main UI thread)
-            MBProgressHUD.hide(for: self.view, animated: true)
-        }
-        task.resume()
-        }
-    }
-    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
-    {
-        if let movies = movies {
-            return movies.count
-        }
-        else{
-            return 0
-        }
+        self.loadData()
+        refreshControl.endRefreshing()
     }
     
-    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
-    {
+    public func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+      return filteredData?.count ?? 0
+    }
+    
+    public func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell=collectionView.dequeueReusableCell(withReuseIdentifier: "CollectionMovieCell", for: indexPath) as! CollectionMovieCell
-        let movie =  movies![indexPath.row]
-        //let title = [movie["title"] as! String]
-                let baseUrl = "https://image.tmdb.org/t/p/w500/"
+        let movie =  filteredData![indexPath.row]
+        //let baseUrl = "https://image.tmdb.org/t/p/w500/"
+
+        let smallImageUrl = "https://image.tmdb.org/t/p/w45/"
+        let largeImageUrl = "https://image.tmdb.org/t/p/original"
         
-        if let posterPath = movie["poster_path"] as? String {
+        /*if let posterPath = movie["poster_path"] as? String {
             let imageRequest = NSURLRequest(url: NSURL(string: baseUrl + posterPath)! as URL)
             
             cell.collectionPosterView.setImageWith(imageRequest as URLRequest, placeholderImage: nil, success: { (imageRequest, imageResponse, image) -> Void in
@@ -162,25 +128,60 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
             failure: { (imageRequest, imageResponse, error) -> Void in
                                                     print("error")
             })
-        }
-
-        //let imageUrl = NSURL(string: baseUrl + posterPath)
-        // new let imageRequest = NSURLRequest(url: NSURL(string: baseUrl + posterPath)! as URL)
-        //cell.collectionPosterView.setImageWith(imageUrl as! URL)
+        }*/
         
-      
+        let posterPath = movie["poster_path"] as? String
+        let smallImageRequest = NSURLRequest(url: NSURL(string: smallImageUrl + posterPath!)! as URL)
+        let largeImageRequest = NSURLRequest(url: NSURL(string: largeImageUrl + posterPath!)! as URL)
         
+        cell.collectionPosterView.setImageWith(
+            smallImageRequest as URLRequest,
+            placeholderImage: nil,
+            success: { (smallImageRequest, smallImageResponse, smallImage) -> Void in
+                
+                // smallImageResponse will be nil if the smallImage is already available
+                // in cache (might want to do something smarter in that case).
+                cell.collectionPosterView.alpha = 0.0
+                cell.collectionPosterView.image = smallImage;
+                
+                UIView.animate(withDuration: 0.3, animations: { () -> Void in
+                    
+                    cell.collectionPosterView.alpha = 1.0
+                    print("Low Resolution Image Loading")
+                }, completion: { (sucess) -> Void in
+                    
+                    // The AFNetworking ImageView Category only allows one request to be sent at a time
+                    // per ImageView. This code must be in the completion block.
+                    cell.collectionPosterView.setImageWith(
+                        largeImageRequest as URLRequest,
+                        placeholderImage: smallImage,
+                        success: { (largeImageRequest, largeImageResponse, largeImage) -> Void in
+                            
+                            cell.collectionPosterView.image = largeImage;
+                            print("High Resolution Image Loading")
+                            
+                    },
+                        failure: { (request, response, error) -> Void in
+                            // do something for the failure condition of the large image request
+                            // possibly setting the ImageView's image to a default image
+                    })
+                })
+        },
+            failure: { (request, response, error) -> Void in
+                // do something for the failure condition
+                // possibly try to get the large image
+        })
         return cell
     }
+    
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
-        
-        /*self.filterMovies = self.movies?.filter({ (movie) -> Bool in
-            return (movie["title"] as! String).range(of: searchText, options:.caseInsensitive, range: nil, locale: nil) != nil
-        }) as! [[String : Any]]?*/
-       /*filterMovies = searchText.isEmpty ? Data : data.filter({(dataString: String) -> Bool in
+        filteredData = searchText.isEmpty ? movies : movies?.filter({(movie: NSDictionary) -> Bool in
+            let title = movie["title"] as! String
+            self.filteredData=self.movies
             // If dataItem matches the searchText, return true to include it
-            return dataString.range(of: searchText, options: .caseInsensitive) != nil
-             })*/
+            return title.range(of: searchText, options: .caseInsensitive) != nil
+        })
+        self.collectionView.reloadData()
     }
     func searchBarTextDidBeginEditing(_ searchBar: UISearchBar) {
         self.searchBar.showsCancelButton = true
@@ -189,39 +190,6 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         searchBar.showsCancelButton = false
         searchBar.text = ""
         searchBar.resignFirstResponder()
-    }
-    
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int
-    {
-        if let movies = movies {
-        return movies.count
-        }
-        else{
-        return 0
-        }
-        /*if let filteredData = filteredData {
-            return filteredData.count
-        }
-        else{
-            return 0
-        }*/
-    }
-   
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell
-    {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "MovieCell", for: indexPath)
-        as! MovieCell
-        let movie =  movies![indexPath.row]
-        
-        let title = movie["title"] as! String
-        let overview = movie["overview"] as! String
-        let posterPath = movie["poster_path"] as! String
-        let baseUrl = "https://image.tmdb.org/t/p/w500/"
-        let imageUrl = NSURL(string: baseUrl + posterPath)
-        cell.titleLabel.text = title
-        cell.overviewLabel.text = overview
-        cell.posterView.setImageWith(imageUrl as! URL)
-                return cell
     }
     
     override func didReceiveMemoryWarning() {
@@ -244,5 +212,4 @@ class MoviesViewController: UIViewController, UITableViewDataSource, UITableView
         detailViewController.movies = movie
         
     }
-    
 }
