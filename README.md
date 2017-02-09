@@ -1,25 +1,59 @@
-# MovieViewer
-Code Path Week 1 Assignment :
-FlicksApp is a movie viewing application for iOS.
+# Project 1 - MovieViewer
 
-Submitted by: Palak Jadav
+MovieViewer is a movies app using the [The Movie Database API](http://docs.themoviedb.apiary.io/#).
+
+Time spent: 40 hours spent in total
 
 ## User Stories
 
 The following **required** functionality is complete:
 
-1. User can view a list of movies currently playing in theaters from The Movie Database.
-2 .Poster images are loaded using the UIImageView category in the AFNetworking library.
-3. The movie poster is available by appending the returned poster_path to https://image.tmdb.org/t/p/w342.
-4. User sees a loading state while waiting for the movies API (you can use any 3rd party library available to do this).
-5. User can pull to refresh the movie list.
+- [ ] User can view a list of movies currently playing in theaters from The Movie Database.
+- [ ] Poster images are loaded using the UIImageView category in the AFNetworking library.
+- [ ] User sees a loading state while waiting for the movies API.
+- [ ] User can pull to refresh the movie list.
+
+The following **optional** features are implemented:
+
+- [ ] User sees an error message when there's a networking error.
+- [ ] Movies are displayed using a CollectionView instead of a TableView.
+- [ ] User can search for a movie.
+- [ ] All images fade in as they are loading.
+- [ ] Customize the UI.
 
 The following **additional** features are implemented:
 
-1. User sees an error message when there's a networking error. You may not use UIAlertController or a 3rd party library to display the error.
-2. Movies are displayed using a CollectionView instead of a TableView.
-3. All images fade in as they are loading. However, each cell is not loading one after the other, the entire movie cell is loading with animation
+- [ ] List anything else that you can get done to improve the app functionality!
+
+Please list two areas of the assignment you'd like to **discuss further with your peers** during the next class (examples include better ways to implement something, how to extend your app in certain ways, etc):
+
+1. 
+2. 
+
+## Video Walkthrough 
+
+Here's a walkthrough of implemented user stories:
+
+<img src='http://i.imgur.com/link/to/your/gif/file.gif' title='Video Walkthrough' width='' alt='Video Walkthrough' />
 
 GIF created with [LiceCap](http://www.cockos.com/licecap/).
 
-http://i.imgur.com/fMTFm2K.gif
+## Notes
+
+Describe any challenges encountered while building the app.
+
+## License
+
+Copyright [yyyy] [name of copyright owner]
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
